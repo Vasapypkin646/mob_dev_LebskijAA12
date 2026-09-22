@@ -1,0 +1,125 @@
+//1.1
+fun greetUser(name: Snring, age: Int): String {
+	return "Привет, $name! Через 10 лет тебе будет ${age + 10} лет."
+}
+//1.2
+fun getSeason(month: Int): String {
+	val result = when(month) {
+		12,1,2 -> "Зима"
+		3, 4, 5 -> "Весна"
+		in 6..8 -> "Лето"
+		in 9..11 -> "Осень"
+		else -> "incorrect"
+	}
+	return result
+}
+//1.3
+fun factorial(n: Int): Long {
+	var c = 1
+	if (n >= 0) {
+		for (tailrec in 1..n){
+			c = tailrec * c
+		}
+	}
+	else{
+		return -1
+	}
+	return c
+}
+//2.1
+fun parseIntSafe(str: String?): Int? {
+	return toIntOrNull(str)
+}
+//2.2
+fun filterNonNullAndDouble(list: List<Int?>): List<Int> {
+	val result = mutableListOf<Int>()
+    
+    for (item in list) {
+        if (item != null) {
+            result.add(item * 2)   
+        }
+    }
+    
+    return result
+}
+
+//3.1
+data class Person(val name: String, val age: Int)
+
+fun averageAge(people: List<Person>): Double {
+    // TODO: Реализовать с использованием map и average()
+
+    return people.map {it.age}.average()
+}
+
+//3.3
+fun findLongestWord(words: List<String>): String? {
+	
+	return maxByOrNull { it.length }
+}
+
+
+// 4.1
+runBlocking {
+	
+	delayedPrint("Hello world!", 2000)
+}
+
+
+suspend fun delayedPrint(message: String, delayMs: Long) {
+	println("Начинаем...")
+	println(message)
+	delay(delayMs)
+	println("Готово!")
+}
+//4.2
+
+suspend fun runParallelTasks() = coroutineScope {
+	val deferred1: Deferred<String> = async {
+    delay(1000)
+    "Результат 1"
+	}
+	val deferred2: Deferred<String> = async {
+    delay(2000)
+    "Результат 2"
+	}
+	val deferred3: Deferred<String> = async {
+    delay(3000)
+    "Результат 3"
+	}
+	val result1: String = deferred1.await()
+	println(result1)
+	val result2: String = deferred2.await()
+	println(result2)
+	val result3: String = deferred3.await()
+	println(result3)
+}
+
+//4.3
+fun processUserInput(input: String?): Map<String, Any> {
+    
+    if (input == null) return emptyMap()
+
+   
+    val parts = input.split(",").map { it.trim() }
+    val numbers = parts.mapNotNull { it.toIntOrNull() }
+
+   
+    if (parts.isNotEmpty() && numbers.size == parts.size) {
+        return mapOf(
+            "sum" to numbers.sum(),
+            "average" to numbers.average(),  
+            "count" to numbers.size,
+            "sorted" to numbers.sorted()  
+        )
+    }
+
+    
+    val words = input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+
+    return mapOf(
+        "wordCount" to words.size,
+        "longestWord" to (words.maxByOrNull { it.length } ?: ""),
+        "charCount" to input.replace(Regex("\\s"), "").length
+    )
+}
