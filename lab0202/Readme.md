@@ -24,7 +24,7 @@
 
 **Выполнены следующие задачи:**
 
-> 1. Настройка среды разработки (IntelliJ IDEA Community на Debian).
+> 1. Настройка среды разработки на Debian (Kotlin через SDKMAN, IntelliJ IDEA Community).
 > 2. Реализация задач блока 1 «Базовый синтаксис» (greetUser, getSeason, factorial).
 > 3. Реализация задач блока 2 «Null-безопасность» (parseIntSafe, filterNonNullAndDouble).
 > 4. Реализация задач блока 3 «Коллекции и функции высшего порядка» (averageAge, groupByFirstLetter, findLongestWord).
@@ -74,12 +74,13 @@ kotlin-tasks/
 │           │   ├── NullSafety.kt       # Задачи блока 2 (2.1–2.2)
 │           │   ├── Collections.kt      # Задачи блока 3 (3.1–3.3)
 │           │   ├── Coroutines.kt       # Задачи блока 4 (4.1–4.2)
-│           │   ├── DopTask.kt        # Дополнительное задание
+│           │   ├── DopTask.kt          # Дополнительное задание
 │           │   └── DataClasses.kt      # Data class Person
 │           └── utils/
 │               └── TestUtils.kt        # Вспомогательные функции
 ├── build.gradle.kts
 ├── README.md
+├── REPORT.md
 └── .gitignore
 ```
 
@@ -87,7 +88,7 @@ kotlin-tasks/
 
 **Задача 1.1. Приветствие пользователя**
 
-Реализована функция greetUser, формирующая приветствие с вычислением возраста через 10 лет:
+Функция greetUser формирует строку с приветствием и вычисляет возраст через 10 лет с помощью строковой интерполяции:
 
 ```kotlin
 fun greetUser(name: String, age: Int): String {
@@ -97,7 +98,7 @@ fun greetUser(name: String, age: Int): String {
 
 **Задача 1.2. Определение времени года**
 
-Для определения сезона использована конструкция when с диапазонами:
+Для определения сезона использована конструкция when с перечислением значений и диапазонами:
 
 ```kotlin
 fun getSeason(month: Int): String {
@@ -106,7 +107,7 @@ fun getSeason(month: Int): String {
         3, 4, 5  -> "Весна"
         in 6..8  -> "Лето"
         in 9..11 -> "Осень"
-        else     -> "Некорректный месяц"
+        else     -> "incorrect"
     }
     return result
 }
@@ -114,7 +115,7 @@ fun getSeason(month: Int): String {
 
 **Задача 1.3. Факториал числа (tailrec)**
 
-Реализована хвостовая рекурсия с аккумулятором. Компилятор Kotlin автоматически оптимизирует её в цикл, что исключает переполнение стека:
+Реализована хвостовая рекурсия с аккумулятором. Компилятор Kotlin автоматически преобразует такую функцию в цикл, что исключает переполнение стека при больших n:
 
 ```kotlin
 tailrec fun factorial(n: Int, accumulator: Long = 1L): Long {
@@ -127,21 +128,29 @@ tailrec fun factorial(n: Int, accumulator: Long = 1L): Long {
 
 **Задача 2.1. Безопасное преобразование строки в число**
 
-Использована функция toIntOrNull(), которая возвращает null вместо исключения:
+Использована функция toIntOrNull(), возвращающая null вместо исключения при невалидном вводе:
 
 ```kotlin
 fun parseIntSafe(str: String?): Int? {
-    return str?.toIntOrNull()
+    return toIntOrNull(str)
 }
 ```
 
-**Задача 2.2. Фильтрация null и удвоение**
+**Задача 2.2. Фильтрация null-элементов и удвоение**
 
-Реализована цепочка функций высшего порядка filterNotNull и map:
+Реализована через явный цикл с проверкой на null и добавлением удвоенного значения в результирующий список:
 
 ```kotlin
 fun filterNonNullAndDouble(list: List<Int?>): List<Int> {
-    return list.filterNotNull().map { it * 2 }
+    val result = mutableListOf<Int>()
+
+    for (item in list) {
+        if (item != null) {
+            result.add(item * 2)
+        }
+    }
+
+    return result
 }
 ```
 
@@ -149,10 +158,11 @@ fun filterNonNullAndDouble(list: List<Int?>): List<Int> {
 
 **Задача 3.1. Средний возраст**
 
+Использована цепочка map для извлечения возрастов и average() для вычисления среднего:
+
 ```kotlin
 fun averageAge(people: List<Person>): Double {
-    return if (people.isEmpty()) 0.0
-           else people.map { it.age }.average()
+    return people.map { it.age }.average()
 }
 ```
 
@@ -160,9 +170,7 @@ fun averageAge(people: List<Person>): Double {
 
 ```kotlin
 fun groupByFirstLetter(words: List<String>): Map<Char, List<String>> {
-    return words
-        .filter { it.isNotEmpty() }
-        .groupBy { it.first().uppercaseChar() }
+    return words.groupBy { it.first().uppercaseChar() }
 }
 ```
 
@@ -170,7 +178,7 @@ fun groupByFirstLetter(words: List<String>): Map<Char, List<String>> {
 
 ```kotlin
 fun findLongestWord(words: List<String>): String? {
-    return words.maxByOrNull { it.length }
+    return maxByOrNull { it.length }
 }
 ```
 
@@ -178,10 +186,11 @@ fun findLongestWord(words: List<String>): String? {
 
 **Задача 4.1. Асинхронная задержка**
 
-Реализована suspend-функция с использованием delay:
+Реализована suspend-функция с использованием delay для неблокирующей задержки:
 
 ```kotlin
 suspend fun delayedPrint(message: String, delayMs: Long) {
+    println("Начинаем...")
     println(message)
     delay(delayMs)
     println("Готово!")
@@ -190,21 +199,34 @@ suspend fun delayedPrint(message: String, delayMs: Long) {
 
 **Задача 4.2. Параллельное выполнение задач**
 
-Для параллельного запуска трёх задач использованы async/await внутри coroutineScope:
+Три задачи запускаются параллельно внутри coroutineScope через async, затем результаты получаются через await():
 
 ```kotlin
-suspend fun runParallelTasks(): List<String> = coroutineScope {
-    val deferred1 = async { delay(1000); "Результат 1" }
-    val deferred2 = async { delay(2000); "Результат 2" }
-    val deferred3 = async { delay(3000); "Результат 3" }
-
-    listOf(deferred1.await(), deferred2.await(), deferred3.await())
+suspend fun runParallelTasks() = coroutineScope {
+    val deferred1: Deferred<String> = async {
+        delay(1000)
+        "Результат 1"
+    }
+    val deferred2: Deferred<String> = async {
+        delay(2000)
+        "Результат 2"
+    }
+    val deferred3: Deferred<String> = async {
+        delay(3000)
+        "Результат 3"
+    }
+    val result1: String = deferred1.await()
+    println(result1)
+    val result2: String = deferred2.await()
+    println(result2)
+    val result3: String = deferred3.await()
+    println(result3)
 }
 ```
 
 ### 3.7. Дополнительное задание (на «Отлично»)
 
-Реализована функция processUserInput, которая определяет тип входных данных (числа или текст) и возвращает соответствующую статистику:
+Реализована функция processUserInput, которая определяет тип входных данных (числа через запятую или текст) и возвращает соответствующую статистику в виде Map:
 
 ```kotlin
 fun processUserInput(input: String?): Map<String, Any> {
@@ -234,34 +256,39 @@ fun processUserInput(input: String?): Map<String, Any> {
 
 ### 3.8. Тестирование в Main.kt
 
-В функции main() собраны проверки всех реализованных задач с ожидаемым выводом в комментариях:
+В функции main() собраны проверки всех реализованных задач:
 
 ```kotlin
 fun main() {
     println("=== Тестирование лабораторной работы №2 ===\\n")
 
+    // Блок 1
     println("--- Блок 1. Базовый синтаксис ---")
     println(BasicSyntax.greetUser("Анна", 25))
     println(BasicSyntax.getSeason(3))
     println(BasicSyntax.factorial(5))
 
+    // Блок 2
     println("--- Блок 2. Null-безопасность ---")
     println(NullSafety.parseIntSafe("123"))
     println(NullSafety.parseIntSafe("abc"))
     println(NullSafety.filterNonNullAndDouble(listOf(1, null, 3, null, 5)))
 
+    // Блок 3
     println("--- Блок 3. Коллекции ---")
     val people = listOf(Person("Анна", 25), Person("Иван", 30), Person("Мария", 35))
     println(Collections.averageAge(people))
     println(Collections.groupByFirstLetter(listOf("apple", "apricot", "banana")))
     println(Collections.findLongestWord(listOf("apple", "banana", "pineapple")))
 
+    // Блок 4
     println("--- Блок 4. Корутины ---")
     runBlocking {
         Coroutines.delayedPrint("Начинаем...", 2000L)
         println(Coroutines.runParallelTasks())
     }
 
+    // Дополнительное задание
     println("--- Дополнительное задание ---")
     println(ExtraTask.processUserInput("1,2,3,4,5"))
     println(ExtraTask.processUserInput("Hello Kotlin World"))
@@ -295,8 +322,12 @@ pineapple
 
 --- Блок 4. Корутины ---
 Начинаем...
+Начинаем...
 Готово!
-[Результат 1, Результат 2, Результат 3]
+Результат 1
+Результат 2
+Результат 3
+kotlin.Unit
 
 --- Дополнительное задание ---
 {sum=15, average=3.0, count=5, sorted=[1, 2, 3, 4, 5]}
@@ -310,7 +341,7 @@ pineapple
 
 ### 1. В чём разница между val и var?
 
-**val** объявляет неизменяемую ссылку — значение можно присвоить только один раз при инициализации. **var** объявляет изменяемую переменную, значение которой можно переприсваивать. По соглашениям Kotlin рекомендуется использовать val везде, где это возможно — это уменьшает количество ошибок и делает код более предсказуемым.
+**val** объявляет неизменяемую ссылку — значение присваивается один раз при инициализации. **var** объявляет изменяемую переменную. В Kotlin рекомендуется использовать val везде, где это возможно — это уменьшает количество ошибок и делает код предсказуемее.
 
 ```kotlin
 val name = "Анна"   // нельзя переприсвоить
@@ -319,7 +350,7 @@ var age = 25        // можно: age = 26
 
 ### 2. Что такое null-безопасность и как она реализована в Kotlin?
 
-Kotlin на уровне системы типов разделяет nullable- и non-nullable-типы. По умолчанию переменная не может содержать null. Чтобы разрешить null, используется знак вопроса:
+Kotlin разделяет nullable- и non-nullable-типы на уровне системы типов. По умолчанию переменная не может содержать null. Чтобы разрешить null, используется знак вопроса:
 
 ```kotlin
 var a: String = "text"    // не может быть null
@@ -327,19 +358,20 @@ var b: String? = null     // может быть null
 ```
 
 Основные инструменты:
-- **?. (safe call)** — вызов метода только если объект не null.
-- **?: (elvis)** — значение по умолчанию, если слева null.
-- **!! (non-null assertion)** — принудительное разыменование с риском NPE (не рекомендуется).
+
+- **?. (safe call)** — вызов метода, только если объект не null;
+- **?: (elvis)** — значение по умолчанию, если слева null;
+- **!!** — non-null assertion (опасно, может бросить NPE);
 - **?.let { }** — безопасное выполнение блока.
 
 ### 3. Что такое tailrec и когда его следует использовать?
 
-**tailrec** — модификатор, указывающий компилятору, что функция является хвостовой рекурсией. Компилятор преобразует её в обычный цикл, что исключает рост стека вызовов и StackOverflowError. Условие: рекурсивный вызов должен быть **последней** операцией функции. Применяется в алгоритмах, где естественная реализация — рекурсивная, но глубина может быть большой (обходы, факториал, вычисления по накопителю).
+**tailrec** — модификатор, указывающий компилятору, что функция является хвостовой рекурсией. Компилятор преобразует её в обычный цикл, что исключает рост стека и StackOverflowError. Условие: рекурсивный вызов должен быть **последней** операцией функции. Применяется там, где естественная реализация рекурсивная, но глубина может быть большой (обходы, факториал, вычисления с накопителем).
 
 ### 4. Чем filter отличается от filterNotNull?
 
-- **filter** принимает предикат и оставляет элементы, для которых он истинен. Работает с любыми типами и любыми условиями.
-- **filterNotNull** — специализированная функция для коллекций с nullable-элементами. Она отбрасывает все null и **сужает тип** с List<T?> до List<T>.
+- **filter** принимает предикат и оставляет элементы, для которых он истинен.
+- **filterNotNull** — специализированная функция для коллекций с nullable-элементами. Отбрасывает все null и **сужает тип** с List<T?> до List<T>.
 
 ```kotlin
 val list = listOf(1, null, 3)
@@ -357,7 +389,7 @@ list.filterNotNull()            // List<Int> — тип сужен
 words.groupBy { it.first().uppercaseChar() }
 ```
 
-Пример собственной функции высшего порядка:
+Собственная функция высшего порядка:
 
 ```kotlin
 fun applyTwice(x: Int, op: (Int) -> Int): Int = op(op(x))
@@ -390,6 +422,7 @@ groupBy — функция, которая принимает лямбду-се�
 ### 10. Что такое data class и зачем он нужен?
 
 **data class** — класс, для которого компилятор автоматически генерирует:
+
 - equals() и hashCode() — сравнение по полям;
 - toString() — читаемое представление;
 - copy() — создание копии с изменёнными полями;
@@ -400,8 +433,8 @@ groupBy — функция, которая принимает лямбду-се�
 ```kotlin
 data class Person(val name: String, val age: Int)
 val p = Person("Анна", 25)
-val (n, a) = p           // деструктуризация
-val p2 = p.copy(age = 26) // копия с изменением
+val (n, a) = p             // деструктуризация
+val p2 = p.copy(age = 26)  // копия с изменением
 ```
 
 ---
@@ -419,6 +452,9 @@ val p2 = p.copy(age = 26) // копия с изменением
 
 4. **Сложность:** Реализация дополнительного задания — определение типа входных данных (числа vs текст).
    - **Решение:** Применил split(",") + mapNotNull { it.toIntOrNull() } и сравнил количество валидных чисел с общим числом частей.
+
+5. **Сложность:** Функция runParallelTasks() выводит результаты сама и возвращает Unit, поэтому в main() при попытке вывести её результат выводится kotlin.Unit.
+   - **Решение:** Понял, что для чистого возврата списка нужно собирать результаты через listOf(...) и возвращать их, а не печатать внутри функции.
 
 ---
 
@@ -444,14 +480,4 @@ val p2 = p.copy(age = 26) // копия с изменением
 > 6. Оформлена документация (README.md, REPORT.md) и проект загружен в публичный репозиторий GitLab.
 
 Kotlin показал себя как выразительный и безопасный язык. Особенно понравилась работа с коллекциями, где одна строчка может заменить цикл в несколько строк, и корутины, которые без блокировки потока позволяют выполнять несколько задач одновременно.
-
----
-
-## 9. ИСПОЛЬЗОВАННЫЕ ИСТОЧНИКИ
-
-1. [Официальная документация Kotlin](https://kotlinlang.org/docs/home.html)
-2. [Kotlin для Android-разработчиков](https://developer.android.com/kotlin)
-3. [Корутины в Kotlin](https://kotlinlang.org/docs/coroutines-guide.html)
-4. [Kotlin Collections — операции](https://kotlinlang.org/docs/collection-operations.html)
-5. [Null Safety в Kotlin](https://kotlinlang.org/docs/null-safety.html)
-6. [Kotlin Playground](https://play.kotlinlang.org/)
+s
